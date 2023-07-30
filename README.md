@@ -33,6 +33,12 @@ The script primarily contains a class called `DecisionTree` that encapsulates th
 
 The `DecisionTree` class uses a nested `Node` class to represent the nodes in the decision tree. Each `Node` can represent either a decision node (with a feature and a threshold for splitting) or a leaf node (with a value to be returned for predictions).
 
+## Entropy Function
+
+Entropy is a measure of disorder or uncertainty and the goal of Machine Learning models and Data Mining is to reduce uncertainty. The entropy is calculated using the formula:
+```H(X)=−∑(P(x)∗log2(P(x))) ```
+where P(x) is the probability of occurrence of data element x.
+
 ## Future Work
 
 - **Pruning**: Implement pruning to avoid overfitting and reduce the complexity of the final decision tree.
