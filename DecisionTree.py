@@ -2,7 +2,7 @@
 # Author: Austin Boone
 # Date: July 30th, 2023
 #
-# Machine-Learning-Algorithm.py
+# DecisionTree.py
 #
 # Implements a decision tree machine learning algorithm. 
 # This algorithm can be used for both classification and regression tasks, 
