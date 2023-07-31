@@ -2,14 +2,14 @@
 
 ## Description
 
-The `Machine-Learning-Algorithm.py` file is a Python script that implements a decision tree machine learning algorithm. The decision tree can be used for both classification and regression tasks. 
+The `DecisionTree.py` file is a Python script that implements a decision tree machine learning algorithm. The decision tree can be used for both classification and regression tasks. 
 
 ## How to Run the Code
 
 You can run this code by executing the script in a Python environment. Make sure you have the necessary dependencies installed (see the "Dependencies" section below). You can run the script with the following command:
 
 ```
-python Machine-Learning-Algorithm.py
+python DecisionTree.py
 ```
 
 **Note**: This command assumes that you have Python installed and that the script is in your current working directory.
