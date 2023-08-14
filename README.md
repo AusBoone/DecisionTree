@@ -1,4 +1,4 @@
-# ML-DecisionTree-Algorithm
+# Decision Tree Algorithm
 
 ## Description
 
