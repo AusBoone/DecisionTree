@@ -70,31 +70,45 @@ class DecisionTree:
         return np.array([self._traverse_tree(x, self.root) for x in X])
 
     def _grow_tree(self, X, y, depth=0):
-        """
-        Recursively grow the tree.
-        """
-        n_samples, n_features = X.shape
-        n_labels = len(np.unique(y))
+    """
+    Recursively grow the decision tree.
 
-        # stopping criteria
-        if (depth >= self.max_depth
-                or n_labels == 1
-                or n_samples < self.min_samples_split):
-            leaf_value = self._most_common_label(y)
-            if self.task == 'regression':
-                leaf_value = np.mean(y)
-            return Node(value=leaf_value)
+    Parameters:
+    X (numpy.ndarray): A matrix containing the feature vectors for the dataset.
+    y (numpy.ndarray): A vector containing the target labels for the dataset.
+    depth (int): The current depth of the tree. Default is 0.
 
-        feat_idxs = np.random.choice(n_features, self.n_feats, replace=False)
+    Returns:
+    Node: The root node of the grown tree.
+    """
+    
+    n_samples, n_features = X.shape  # Get the number of samples and features
+    n_labels = len(np.unique(y))     # Get the number of unique labels in the target
 
-        # greedily select the best split according to information gain
-        best_feat, best_thresh = self._best_criteria(X, y, feat_idxs)
-            
-        # grow the children that result from the split
-        left_idxs, right_idxs = self._split(X[:, best_feat], best_thresh)
-        left = self._grow_tree(X[left_idxs, :], y[left_idxs], depth+1)
-        right = self._grow_tree(X[right_idxs, :], y[right_idxs], depth+1)
-        return Node(best_feat, best_thresh, left, right)
+    # Check stopping criteria: if any of these conditions are met, create a leaf node
+    if (depth >= self.max_depth                     # Maximum depth reached
+            or n_labels == 1                        # All samples have the same label
+            or n_samples < self.min_samples_split): # Number of samples is below the threshold for splitting
+        leaf_value = self._most_common_label(y)     # Get the most common label in the target
+        if self.task == 'regression':               # If the task is regression, use the mean value instead
+            leaf_value = np.mean(y)
+        return Node(value=leaf_value)               # Create and return a leaf node with the determined value
+
+    # Select a random subset of features to consider for splitting
+    feat_idxs = np.random.choice(n_features, self.n_feats, replace=False)
+
+    # Greedily select the best split according to information gain
+    best_feat, best_thresh = self._best_criteria(X, y, feat_idxs)
+
+    # Split the dataset into left and right subsets based on the best feature and threshold
+    left_idxs, right_idxs = self._split(X[:, best_feat], best_thresh)
+
+    # Recursively grow the left and right children
+    left = self._grow_tree(X[left_idxs, :], y[left_idxs], depth + 1)
+    right = self._grow_tree(X[right_idxs, :], y[right_idxs], depth + 1)
+
+    # Return a node with the best feature, threshold, and left and right children
+    return Node(best_feat, best_thresh, left, right)
 
     def _traverse_tree(self, x, node):
         """
@@ -117,43 +131,62 @@ class DecisionTree:
 
     def _best_criteria(self, X, y, feat_idxs):
         """
-        Find the best criteria of all.
+        This method finds the best criteria for splitting a node in a decision tree.
+    
+        Parameters:
+        X (numpy.ndarray): A matrix containing the feature vectors for the dataset.
+        y (numpy.ndarray): A vector containing the target labels for the dataset.
+        feat_idxs (list): A list of feature indices to consider for the split.
+    
+        Returns:
+        split_idx (int): The index of the feature that provides the best split.
+        split_thresh (float): The threshold value for the best split.
         """
-        best_gain = -1
-        split_idx, split_thresh = None, None
+        
+        # Initialize variables to store the best information gain and corresponding split parameters
+        best_gain = -1  # Placeholder for the best information gain. Initialized to a value that will always be improved upon.
+        split_idx, split_thresh = None, None  # Placeholder for the index of the feature and threshold value for the best split.
+    
+        # Iterate through the given feature indices
         for feat_idx in feat_idxs:
-            X_column = X[:, feat_idx]
-            thresholds = np.unique(X_column)
+            X_column = X[:, feat_idx]         # Extract the column corresponding to the current feature index
+            thresholds = np.unique(X_column)  # Obtain unique values in the feature column to consider as potential thresholds
+    
+            # Iterate through the unique thresholds for the current feature
             for threshold in thresholds:
+                # Calculate the information gain using the given threshold for the current feature
                 gain = self._information_gain(y, X_column, threshold)
-
+    
+                # If the calculated gain is greater than the current best gain, update the best gain and split parameters
                 if gain > best_gain:
                     best_gain = gain
                     split_idx = feat_idx
                     split_thresh = threshold
-
+    
+        # Return the index of the feature and threshold value that provides the best split
         return split_idx, split_thresh
+
 
     def _information_gain(self, y, X_column, split_thresh):
         """
         Calculate information gain.
         """
-        # parent loss
+        # Parent loss
         parent_entropy = entropy(y)
 
-        # generate split
+        # Generate split
         left_idxs, right_idxs = self._split(X_column, split_thresh)
 
         if len(left_idxs) == 0 or len(right_idxs) == 0:
             return 0
 
-        # compute the weighted avg. of the loss for the children
+        # Compute the weighted avg. of the loss for the children
         n = len(y)
         n_l, n_r = len(left_idxs), len(right_idxs)
         e_l, e_r = entropy(y[left_idxs]), entropy(y[right_idxs])
         child_entropy = (n_l / n) * e_l + (n_r / n) * e_r
 
-        # information gain is difference in loss before vs. after split
+        # Information gain is difference in loss before vs. after split
         ig = parent_entropy - child_entropy
         return ig
 
